@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JinxO Digital Board</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap');
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #ffd600;
+            color: #1a1a1a;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            background-image: radial-gradient(#ffea00 20%, transparent 20%);
+            background-size: 20px 20px;
+        }
+        h1 { color: #d80032; margin-top: 15px; margin-bottom: 5px; font-weight: 800; font-size: 28px; text-shadow: 2px 2px 0px #fff; }
+        .subtitle { color: #333; font-weight: 600; font-size: 15px; background: rgba(255,255,255,0.7); display: inline-block; padding: 5px 15px; border-radius: 20px; margin-bottom: 15px; }
+        .board-container { max-width: 650px; margin: 10px auto; position: relative; }
+        .col-labels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 5px; padding-right: 45px; }
+        .board-flex { display: flex; align-items: stretch; gap: 5px; }
+        .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex-grow: 1; }
+        .row-labels { display: flex; flex-direction: column; justify-content: space-around; width: 40px; }
+        .label-badge { background: #d80032; color: white; font-weight: 800; font-size: 16px; border: 2px solid #00203f; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0px #00203f; width: 35px; height: 35px; margin: auto; }
+        .cell { background: #ffffff; border: 4px solid #00203f; border-radius: 12px; padding: 10px 5px; display: flex; flex-direction: column; align-items: center; box-shadow: 3px 3px 0px #00203f; }
+        input[type="text"] { width: 95%; border: none; border-bottom: 2px dashed #00203f; text-align: center; font-size: 16px; font-weight: 600; font-family: 'Kanit', sans-serif; margin-bottom: 12px; padding: 5px; outline: none; background: transparent; color: #d80032; }
+        .actions { display: flex; gap: 4px; justify-content: center; width: 100%; }
+        button.score-btn { border: 2px solid transparent; border-radius: 8px; cursor: pointer; font-size: 14px; padding: 8px 0; transition: all 0.2s; background: #f0f0f0; flex: 1; max-width: 50px; font-weight: bold; }
+        .active-x { background: #d80032 !important; color: white; border-color: #8a0020; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
+        .active-o { background: #0077b6 !important; color: white; border-color: #004d7a; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
+        .active-star { background: #ff9100 !important; color: white; border-color: #cc7400; font-weight: 800; text-shadow: 1px 1px 0 #cc7400; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
+        .current-score { background: #ffffff; padding: 12px; border-radius: 12px; max-width: 650px; width: 100%; margin: 15px auto; border: 3px solid #ff9100; font-size: 18px; font-weight: 800; color: #00203f; box-shadow: 3px 3px 0px #ff9100; }
+        .current-score span { color: #d80032; font-size: 20px;}
+        
+        /* สไตล์ของปุ่มจัดการแบบแยกส่วน */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            max-width: 650px;
+            margin: 15px auto;
+            width: 100%;
+        }
+        .action-btn {
+            color: white;
+            font-family: 'Kanit', sans-serif;
+            font-size: 17px;
+            font-weight: 800;
+            border: 3px solid #00203f;
+            border-radius: 12px;
+            padding: 12px 10px;
+            cursor: pointer;
+            box-shadow: 0px 5px 0px #00203f;
+            transition: 0.1s;
+            flex: 1;
+        }
+        .action-btn:active { transform: translateY(5px); box-shadow: 0px 0px 0px #00203f; }
+        .btn-save { background-color: #0077b6; flex: 2; }
+        .btn-clear { background-color: #d80032; flex: 1; }
+
+        .summary-board { background: white; padding: 15px; border-radius: 16px; max-width: 650px; width: 100%; margin: 20px auto 40px auto; border: 4px solid #00203f; box-shadow: 4px 4px 0px #00203f; text-align: left; }
+        .summary-title { text-align: center; font-size: 20px; font-weight: 800; color: #00203f; margin-bottom: 12px; border-bottom: 3px dashed #ccc; padding-bottom: 8px; }
+        .round-row { margin: 8px 0; font-size: 16px; padding: 10px; background: #f4f6f8; border-radius: 8px; border-left: 5px solid #0077b6; }
+        .round-row span { font-weight: 800; color: #d80032; }
+        .grand-total { text-align: center; font-size: 26px; font-weight: 800; color: #d80032; margin-top: 15px; padding-top: 15px; border-top: 3px dashed #00203f; }
+    </style>
+</head>
+<body>
+
+    <h1>📝 JinxO Digital Board</h1>
+    <div class="subtitle">❌ 0 แต้ม | ⭕ 1 แต้ม | ⭐ 3 แต้ม</div>
+
+    <div class="board-container">
+        <div class="col-labels">
+            <div class="label-badge">+1</div>
+            <div class="label-badge">+2</div>
+            <div class="label-badge">+3</div>
+        </div>
+        
+        <div class="board-flex">
+            <div class="board" id="board"></div>
+            
+            <div class="row-labels">
+                <div class="label-badge">+3</div>
+                <div class="label-badge">+2</div>
+                <div class="label-badge">+1</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="current-score">
+        คะแนนตานี้: ตอบ <span id="current-base">0</span> + บิงโก <span id="current-bonus">0</span> = รวม <span id="current-total">0</span> แต้ม
+    </div>
+
+    <div class="btn-group">
+        <button class="action-btn btn-save" id="save-btn" onclick="saveRound()">💾 บันทึกคะแนนรอบที่ 1</button>
+        <button class="action-btn btn-clear" onclick="clearBoardWithConfirm()">🧹 ล้างกระดาน</button>
+    </div>
+
+    <div class="summary-board">
+        <div class="summary-title">📊 สรุปคะแนน 3 รอบ</div>
+        <div id="round-list">
+            <div class="round-row" id="round-1">รอบที่ 1 : ยังไม่มีคะแนน</div>
+            <div class="round-row" id="round-2">รอบที่ 2 : ยังไม่มีคะแนน</div>
+            <div class="round-row" id="round-3">รอบที่ 3 : ยังไม่มีคะแนน</div>
+        </div>
+        <div class="grand-total">
+            🏆 คะแนนรวมสุทธิ: <span id="grand-total">0</span> แต้ม
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ระบบใส่รหัสผ่านก่อนเข้าเกม (เด้งถามทุกครั้ง)
+        // ==========================================
+        let password = prompt("🛑 กรุณาใส่รหัสผ่านเพื่อเข้าสู่เกม:");
+        
+        // 🔑 เปลี่ยนเลข  เป็นรหัสผ่านที่คุณต้องการได้เลยครับ
+        if (password !== "nemesis") { 
+            alert("❌ รหัสผ่านไม่ถูกต้อง! ระบบจะพากลับไปหน้าแรก");
+            window.location.href = "https://febcafe.com"; 
+        }
+
+        // ==========================================
+        // ระบบกระดานเกม
+        // ==========================================
+        const board = document.getElementById('board');
+        let scores = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let currentRound = 1;
+        let roundTotals = [0, 0, 0]; 
+        let currentBase = 0, currentBonus = 0, currentTotal = 0;
+
+        function renderBoard() {
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.innerHTML = '<input type="text" id="input-' + i + '" placeholder="คำตอบ ' + (i+1) + '">' +
+                                 '<div class="actions">' +
+                                 '<button class="score-btn btn-x" onclick="setScore(' + i + ', 0, this, \'x\')">❌</button>' +
+                                 '<button class="score-btn btn-o" onclick="setScore(' + i + ', 1, this, \'o\')">⭕</button>' +
+                                 '<button class="score-btn btn-star" onclick="setScore(' + i + ', 3, this, \'star\')">⭐</button>' +
+                                 '</div>';
+                board.appendChild(cell);
+            }
+        }
+
+        function setScore(index, value, btn, type) {
+            scores[index] = value;
+            let parent = btn.parentElement;
+            
+            parent.querySelector('.btn-x').classList.remove('active-x');
+            parent.querySelector('.btn-o').classList.remove('active-o');
+            parent.querySelector('.btn-star').classList.remove('active-star');
+
+            if (type === 'x') btn.classList.add('active-x');
+            if (type === 'o') btn.classList.add('active-o');
+            if (type === 'star') btn.classList.add('active-star');
+
+            calculateScore();
+        }
+
+        function calculateScore() {
+            currentBase = 0;
+            for(let i=0; i<scores.length; i++) { currentBase += scores[i]; }
+            
+            currentBonus = 0;
+            const isBingo = function(i1, i2, i3) {
+                return (scores[i1] > 0 && scores[i2] > 0 && scores[i3] > 0);
+            };
+
+            if (isBingo(0, 1, 2)) currentBonus += 3;
+            if (isBingo(3, 4, 5)) currentBonus += 2;
+            if (isBingo(6, 7, 8)) currentBonus += 1;
+            
+            if (isBingo(0, 3, 6)) currentBonus += 1;
+            if (isBingo(1, 4, 7)) currentBonus += 2;
+            if (isBingo(2, 5, 8)) currentBonus += 3;
+
+            currentTotal = currentBase + currentBonus;
+
+            document.getElementById('current-base').innerText = currentBase;
+            document.getElementById('current-bonus').innerText = currentBonus;
+            document.getElementById('current-total').innerText = currentTotal;
+        }
+
+        // ฟังก์ชันล้างกระดาน
+        function clearBoard() {
+            scores = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            calculateScore();
+            renderBoard();
+        }
+
+        // ฟังก์ชันถามยืนยันก่อนล้างกระดาน
+        function clearBoardWithConfirm() {
+            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างกระดานตานี้? (คำตอบและคะแนนจะหายไป)")) {
+                clearBoard();
+            }
+        }
+
+        // ฟังก์ชันบันทึกคะแนน (เพิ่มระบบกดยืนยันแล้ว)
+        function saveRound() {
+            if (currentRound <= 3) {
+                // 🛑 ถามยืนยันก่อนบันทึกรอบ
+                if (confirm(`ยืนยันการบันทึกคะแนนรอบที่ ${currentRound} ใช่หรือไม่?`)) {
+                    
+                    document.getElementById('round-' + currentRound).innerHTML = 'รอบที่ ' + currentRound + ' : ตอบ <span>' + currentBase + '</span> + บิงโก <span>' + currentBonus + '</span> = รวม <span>' + currentTotal + '</span> แต้ม';
+                    
+                    roundTotals[currentRound - 1] = currentTotal;
+                    
+                    let sum = 0;
+                    for(let i=0; i<roundTotals.length; i++) { sum += roundTotals[i]; }
+                    document.getElementById('grand-total').innerText = sum;
+
+                    currentRound++;
+
+                    const btn = document.getElementById('save-btn');
+                    if (currentRound <= 3) {
+                        btn.innerHTML = '💾 บันทึกคะแนนรอบที่ ' + currentRound;
+                    } else {
+                        btn.innerHTML = '🔄 เริ่มเกมใหม่ทั้งหมด';
+                        btn.style.backgroundColor = '#00203f';
+                    }
+                    
+                    // บันทึกเสร็จแล้ว ล้างกระดานให้พร้อมเล่นรอบต่อไปอัตโนมัติ
+                    clearBoard(); 
+                }
+            } else {
+                // 🛑 ถามยืนยันก่อนรีเซ็ตเริ่มเกมใหม่
+                if (confirm("ต้องการเริ่มเกมใหม่ทั้งหมดใช่หรือไม่? (คะแนนจะถูกรีเซ็ตเป็น 0)")) {
+                    currentRound = 1;
+                    roundTotals = [0, 0, 0];
+                    for (let i = 1; i <= 3; i++) {
+                        document.getElementById('round-' + i).innerHTML = 'รอบที่ ' + i + ' : ยังไม่มีคะแนน';
+                    }
+                    document.getElementById('grand-total').innerText = '0';
+                    
+                    const btn = document.getElementById('save-btn');
+                    btn.innerHTML = '💾 บันทึกคะแนนรอบที่ 1';
+                    btn.style.backgroundColor = '#0077b6';
+                    
+                    clearBoard(); 
+                }
+            }
+        }
+
+        window.onload = function() {
+            renderBoard();
+        };
+    </script>
+</body>
+</html>
